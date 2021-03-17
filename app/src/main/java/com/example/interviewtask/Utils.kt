@@ -9,5 +9,6 @@ fun loadImage(view: ImageView, imageUrl: String?) {
 
     Glide.with(view.context)
         .load(imageUrl)
+        .placeholder(R.drawable.placeholder_image_icon_21)
         .into(view);
 }

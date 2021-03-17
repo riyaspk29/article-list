@@ -1,8 +1,6 @@
 package com.example.interviewtask.dashboard
 
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -10,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.example.interviewtask.R
 import com.example.interviewtask.dashboard.adapter.ArticleAdapter
 import com.example.interviewtask.dashboard.model.Article
@@ -51,16 +50,25 @@ class DashboardActivity : AppCompatActivity() {
         dashboardViewModel.page.observe(this, Observer {
             it?.let {
                 binding.viewpager.currentItem = it
-                Log.e("SSS", it.toString())
             }
         })
 
+        binding.viewpager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                dashboardViewModel.updatePage(position)
+            }
+        })
     }
 
 
     private inner class SlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 
-        var topStories:List<Article> = ArrayList()
+        var topStories = listOf<Article>()
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
 
         override fun getItemCount(): Int = topStories.size
 

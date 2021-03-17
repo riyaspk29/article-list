@@ -28,6 +28,10 @@ class DashboardViewModel:ViewModel() {
     val page: LiveData<Int>
         get() = _page
 
+    private val _loadingData = MutableLiveData<Boolean>()
+    val loadingData: LiveData<Boolean>
+        get() = _loadingData
+
     var search = MutableLiveData<String>()
 
     private var viewModelJob = Job()
@@ -37,12 +41,13 @@ class DashboardViewModel:ViewModel() {
     private val timer :CountDownTimer
 
     init {
+        _page.value = 0
+        _loadingData.value = false
+
         getTopStories(BuildConfig.API_KEY)
         getArticles(BuildConfig.API_KEY,"")
 
-        _page.value = 0
-
-        timer = object : CountDownTimer(24*60*60*1000, 3000L) {
+        timer = object : CountDownTimer(24*60*60*1000, 4000L) {
             override fun onTick(millisUntilFinished: Long) {
                 _page.value?.let {
                     if (it >= _topStories.value?.size ?: 0) {
@@ -60,6 +65,7 @@ class DashboardViewModel:ViewModel() {
     }
 
     private fun getArticles(key: String, q:String) {
+        _loadingData.value = true
         coroutineScope.launch {
             val responseBody = ArticleApi.retrofitService.getArticles(key,q)
             try {
@@ -67,6 +73,7 @@ class DashboardViewModel:ViewModel() {
             } catch (e: Exception) {
                 _articles.value = ArrayList()
             }
+            _loadingData.value = false
         }
     }
 
@@ -75,6 +82,7 @@ class DashboardViewModel:ViewModel() {
             val responseBody = ArticleApi.retrofitService.getTopStories(key)
             try {
                 _topStories.value = responseBody.articles
+                delay(4000L)
                 timer.start()
             } catch (e: Exception) {
                 _topStories.value = ArrayList()
@@ -87,6 +95,10 @@ class DashboardViewModel:ViewModel() {
             _articles.value = ArrayList()
             getArticles(BuildConfig.API_KEY, it)
         }
+    }
+
+    fun updatePage(page:Int){
+        _page.value = page
     }
 
     override fun onCleared() {
