@@ -53,4 +53,9 @@ class LoginViewModel:ViewModel() {
             }
         }
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
 }
